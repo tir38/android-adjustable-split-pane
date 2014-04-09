@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
-import android.util.Log;
 
 public abstract class SingleFragmentActivity extends Activity {
 
@@ -20,7 +19,6 @@ public abstract class SingleFragmentActivity extends Activity {
         Fragment fragment = fragmentManager.findFragmentById(R.id.activity_single_fragment_fragment_container);
 
         if (fragment == null) {
-            Log.d("MyListActivity", "creating fragment");
             fragment = createFragment();
             if (fragment != null) {
                 fragmentManager.beginTransaction()

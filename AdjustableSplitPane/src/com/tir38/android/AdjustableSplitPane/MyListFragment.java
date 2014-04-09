@@ -1,5 +1,6 @@
 package com.tir38.android.AdjustableSplitPane;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.ListFragment;
 import android.content.Intent;
@@ -16,11 +17,19 @@ import java.util.List;
 public class MyListFragment extends ListFragment {
 
     private List<Email> mEmails;
+    private Callbacks mCallbacks;
 
     public static Fragment newInstance() {
         Log.d("MyListFragment", "inside newInstance");
         Fragment fragment = new MyListFragment();
         return fragment;
+    }
+
+    /**
+     * Hosting Activity(s) must implement Callbacks
+     */
+    public interface Callbacks {
+        void onEmailSelected(Email email);
     }
 
     @Override
@@ -30,15 +39,23 @@ public class MyListFragment extends ListFragment {
 
         mEmails = DataStore.get().getEmails();
 
-
         // create array adapter
         ArrayAdapter<Email> adapter = new EmailAdapter(mEmails);
 
         setListAdapter(adapter);
-
-
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mCallbacks = (Callbacks) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {

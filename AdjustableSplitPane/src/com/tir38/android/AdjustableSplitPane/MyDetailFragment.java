@@ -15,14 +15,15 @@ public class MyDetailFragment extends Fragment {
     private Email mEmail;
 
     public static MyDetailFragment newInstance() {
+
+        // TODO add email as extra
         MyDetailFragment fragment = new MyDetailFragment();
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);    // TODO
-        Log.d("MyDetailFragment", "inside onCreate");
+        super.onCreate(savedInstanceState);
 
         // pull email from args
         mEmail = (Email) getArguments().getSerializable(ARG_EMAIL);
