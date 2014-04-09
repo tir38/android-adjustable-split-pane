@@ -2,11 +2,13 @@ package com.tir38.android.AdjustableSplitPane;
 
 import android.app.Fragment;
 import android.app.ListFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -33,8 +35,18 @@ public class MyListFragment extends ListFragment {
         ArrayAdapter<Email> adapter = new EmailAdapter(mEmails);
 
         setListAdapter(adapter);
+
+
     }
 
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        Email email = (Email) getListAdapter().getItem(position);
+        Intent intent = new Intent(getActivity(), MyDetailActivity.class);
+        intent.putExtra(MyDetailActivity.EXTRA_EMAIL, email);
+        startActivity(intent);
+    }
 
     // private inner class to extend ArrayAdapter
     private class EmailAdapter extends ArrayAdapter<Email> {
