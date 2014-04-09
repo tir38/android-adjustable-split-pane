@@ -14,7 +14,7 @@ public class MyDetailActivity extends SingleFragmentActivity {
         Email email = (Email) getIntent().getSerializableExtra(EXTRA_EMAIL);
 
         // create fragment
-        Fragment fragment = new MyDetailFragment();
+        Fragment fragment = MyDetailFragment.newInstance();
 
         // add email to fragment's arguments
         if (email != null) {
