@@ -8,7 +8,15 @@ import java.util.List;
  */
 public class DataStore {
 
+    private static DataStore sDataStore;
     private List<Email> mEmails;
+
+    public static DataStore get() {
+        if (sDataStore == null) {
+            sDataStore = new DataStore();
+        }
+        return sDataStore;
+    }
 
     public DataStore() {
         mEmails = new ArrayList<Email>();
