@@ -4,9 +4,12 @@ import android.app.Fragment;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
+import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MyListFragment extends ListFragment {
@@ -29,8 +32,38 @@ public class MyListFragment extends ListFragment {
 
 
         // create array adapter
-        ArrayAdapter<Email> adapter = new ArrayAdapter<Email>(getActivity(), android.R.layout.simple_list_item_1, mEmails);
+        ArrayAdapter<Email> adapter = new EmailAdapter(mEmails);
 
         setListAdapter(adapter);
+    }
+
+
+    // private inner class to extend ArrayAdapter
+    private class EmailAdapter extends ArrayAdapter<Email> {
+
+        public EmailAdapter(List<Email> emails) {
+            super(getActivity(), 0, emails);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = getActivity().getLayoutInflater().inflate(R.layout.list_item_email, null);
+            }
+
+            Email email = getItem(position);
+
+            // set layout widgets from email values
+            TextView fromTextView = (TextView) convertView.findViewById(R.id.list_item_email_from_text_view);
+            fromTextView.setText(email.getFrom());
+
+            TextView toTextView = (TextView) convertView.findViewById(R.id.list_item_email_to_text_view);
+            toTextView.setText(email.getTo());
+
+            TextView titleTextView = (TextView) convertView.findViewById(R.id.list_item_email_title_text_view);
+            titleTextView.setText(email.getTitle());
+
+            return convertView;
+        }
     }
 }
