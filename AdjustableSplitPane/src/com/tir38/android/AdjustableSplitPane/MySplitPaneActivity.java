@@ -7,6 +7,10 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageView;
 
 public class MySplitPaneActivity extends Activity implements MyListFragment.Callbacks {
 
@@ -36,6 +40,15 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
                         .commit();
             }
         }
+
+
+        // handle touch listener on divider
+        ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
+        divider.setOnTouchListener(new DividerTouchListener());
+    }
+
+    private void rebuildLayout(float differenceX){
+        Log.d("TAG", "difference X = " + differenceX);
     }
 
     /**
@@ -61,5 +74,42 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         // add new fragment (to the right pane) and commit transaction
         fragmentTransaction.add(R.id.activity_split_pane_right_pane, newDetailFragment);
         fragmentTransaction.commit();
+    }
+
+    private class DividerTouchListener implements View.OnTouchListener {
+
+        private float initialX;
+        private float currentX;
+        private float differenceX;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    initialX = event.getX();
+                    differenceX = initialX;
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    currentX = event.getX();
+                    differenceX = currentX - initialX;
+                    Log.d("DividerTouchListener", "move. difference = " + differenceX);
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    differenceX = currentX - initialX;
+                    rebuildLayout(differenceX);
+                    // right now only rebuild fragments when user lifts finger
+                    Log.d("DividerTouchListener", "up");
+                    break;
+
+                case MotionEvent.ACTION_CANCEL:
+                    differenceX = currentX - initialX;
+                    Log.d("DividerTouchListener", "cancel");
+                    break;
+            }
+
+            return true;
+        }
     }
 }

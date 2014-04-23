@@ -14,6 +14,11 @@
 
     </FrameLayout>
 
+    <ImageView android:id="@+id/activity_split_pane_divider"
+               android:layout_width="wrap_content"
+               android:layout_height="match_parent"
+               android:background="@drawable/slider_bar"/>
+
     <FrameLayout
             android:id="@+id/activity_split_pane_right_pane"
             android:layout_width="0dp"
@@ -21,6 +26,5 @@
             android:layout_weight="1">
 
     </FrameLayout>
-
 
 </LinearLayout>
