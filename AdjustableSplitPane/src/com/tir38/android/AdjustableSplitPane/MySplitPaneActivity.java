@@ -10,9 +10,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class MySplitPaneActivity extends Activity implements MyListFragment.Callbacks {
+
+    private float percentLeft;
 
     /**
      * public factory
@@ -41,6 +46,14 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
             }
         }
 
+        // set weights of left and right pane
+        percentLeft = 30;
+
+        FrameLayout leftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
+        leftPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
+
+        FrameLayout rightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
+        rightPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
 
         // handle touch listener on divider
         ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
