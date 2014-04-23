@@ -1,6 +1,7 @@
 package com.tir38.android.AdjustableSplitPane;
 
 import android.app.Fragment;
+import android.content.Intent;
 
 public class MyListActivity extends SingleFragmentActivity implements MyListFragment.Callbacks{
 
@@ -11,6 +12,7 @@ public class MyListActivity extends SingleFragmentActivity implements MyListFrag
 
     @Override
     public void onEmailSelected(Email email) {
-        // TODO start new detail activity
-    }
+        Intent intent = new Intent(this, MyDetailActivity.class);
+        intent.putExtra(MyDetailActivity.EXTRA_EMAIL, email);
+        startActivity(intent);    }
 }

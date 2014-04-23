@@ -19,6 +19,8 @@ public class MyListFragment extends ListFragment {
     private List<Email> mEmails;
     private Callbacks mCallbacks;
 
+
+
     public static Fragment newInstance() {
         Log.d("MyListFragment", "inside newInstance");
         Fragment fragment = new MyListFragment();
@@ -60,9 +62,7 @@ public class MyListFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         Email email = (Email) getListAdapter().getItem(position);
-        Intent intent = new Intent(getActivity(), MyDetailActivity.class);
-        intent.putExtra(MyDetailActivity.EXTRA_EMAIL, email);
-        startActivity(intent);
+        mCallbacks.onEmailSelected(email);
     }
 
     // private inner class to extend ArrayAdapter

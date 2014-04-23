@@ -8,9 +8,6 @@ import android.os.Bundle;
 
 public class MySplitPaneActivity extends Activity implements MyListFragment.Callbacks {
 
-    // TODO: inflate ListFragment into left pane
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,13 +29,18 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
 
     @Override
     public void onEmailSelected(Email email) {
-        // TODO send data to DetailFragment
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         Fragment oldDetailFragment = fragmentManager.findFragmentById(R.id.activity_split_pane_right_pane);
         Fragment newDetailFragment = MyDetailFragment.newInstance();
+
+
+        // set arguments
+        Bundle args = new Bundle();
+        args.putSerializable(MyDetailFragment.ARG_EMAIL, email);
+        newDetailFragment.setArguments(args);
 
         if (oldDetailFragment != null) {
             fragmentTransaction.remove(oldDetailFragment);
