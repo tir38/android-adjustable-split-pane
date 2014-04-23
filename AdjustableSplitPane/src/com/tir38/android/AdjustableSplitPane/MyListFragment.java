@@ -19,8 +19,10 @@ public class MyListFragment extends ListFragment {
     private List<Email> mEmails;
     private Callbacks mCallbacks;
 
-
-
+    /**
+     * public factory
+     * @return
+     */
     public static Fragment newInstance() {
         Log.d("MyListFragment", "inside newInstance");
         Fragment fragment = new MyListFragment();
@@ -65,7 +67,9 @@ public class MyListFragment extends ListFragment {
         mCallbacks.onEmailSelected(email);
     }
 
-    // private inner class to extend ArrayAdapter
+    /**
+     * private inner class to extend ArrayAdapter
+     */
     private class EmailAdapter extends ArrayAdapter<Email> {
 
         public EmailAdapter(List<Email> emails) {

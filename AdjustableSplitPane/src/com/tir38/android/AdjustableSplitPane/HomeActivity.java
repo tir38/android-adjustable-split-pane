@@ -17,7 +17,7 @@ public class HomeActivity extends Activity {
         regularButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MyListActivity.class);
+                Intent intent = MyListActivity.newIntent(getParent());
                 startActivity(intent);
             }
         });
@@ -26,7 +26,7 @@ public class HomeActivity extends Activity {
         splitPaneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MySplitPaneActivity.class);
+                Intent intent = MySplitPaneActivity.newIntent(getParent());
                 startActivity(intent);
             }
         });

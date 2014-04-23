@@ -8,16 +8,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
 public class MyDetailFragment extends Fragment {
 
-    public static final String ARG_EMAIL = "MyDetailFragment.ARG_EMAIL";
+    private static final String ARG_EMAIL = "MyDetailFragment.ARG_EMAIL";
     private Email mEmail;
 
-    public static MyDetailFragment newInstance() {
+    /**
+     * public factory
+     * @param email
+     * @return
+     */
+    public static MyDetailFragment newInstance(Email email) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_EMAIL, email);
 
-        // TODO add email as extra
         MyDetailFragment fragment = new MyDetailFragment();
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -27,7 +33,6 @@ public class MyDetailFragment extends Fragment {
 
         // pull email from args
         mEmail = (Email) getArguments().getSerializable(ARG_EMAIL);
-        Log.d("MyDetailFragment", "email from = " + mEmail.getFrom());
     }
 
     @Override
