@@ -13,6 +13,8 @@ public class HomeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        final float initialPercentLeft = 50;
+
         Button regularButton = (Button) findViewById(R.id.activity_home_regular_button);
         regularButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -26,7 +28,7 @@ public class HomeActivity extends Activity {
         splitPaneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = MySplitPaneActivity.newIntent(getApplicationContext());
+                Intent intent = MySplitPaneActivity.newIntent(getApplicationContext(), initialPercentLeft);
                 startActivity(intent);
             }
         });

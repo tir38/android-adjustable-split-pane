@@ -6,8 +6,10 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,15 +19,19 @@ import android.widget.LinearLayout;
 
 public class MySplitPaneActivity extends Activity implements MyListFragment.Callbacks {
 
-    private float percentLeft;
+    private static final String EXTRA_PERCENT_LEFT = "MySplitPaneActivity.EXTRA_PERCENT_LEFT";
+    private float mPercentLeft;
+    private float mTotalWidth;
 
     /**
      * public factory
      * @param context
      * @return
      */
-    public static Intent newIntent(Context context) {
-        return new Intent(context, MySplitPaneActivity.class);
+    public static Intent newIntent(Context context, float percentLeft) {
+        Intent intent = new Intent(context, MySplitPaneActivity.class);
+        intent.putExtra(EXTRA_PERCENT_LEFT, percentLeft);
+        return intent;
     }
 
     @Override
@@ -46,22 +52,33 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
             }
         }
 
-        // set weights of left and right pane
-        percentLeft = 30;
+        // get percent from save instance state
 
+        // set weights of left and right pane
+        mPercentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
         FrameLayout leftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
-        leftPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
+        leftPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, mPercentLeft));
 
         FrameLayout rightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
-        rightPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
+        rightPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 100 - mPercentLeft));
 
-        // handle touch listener on divider
+        // get screen size
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        mTotalWidth = size.x;
+
+        // set touch listener on divider
         ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
         divider.setOnTouchListener(new DividerTouchListener());
     }
 
-    private void rebuildLayout(float differenceX){
-        Log.d("TAG", "difference X = " + differenceX);
+    private void rebuildLayout(float draggedToX){
+        float newPercentLeft = computeNewPercentLeft(draggedToX);
+
+        getIntent().putExtra(EXTRA_PERCENT_LEFT, newPercentLeft);
+        finish();
+        startActivity(getIntent());
     }
 
     /**
@@ -89,36 +106,38 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         fragmentTransaction.commit();
     }
 
+
+    /**
+     * Computes the new percent left based on a draggedToX from the touch listener
+     */
+    private float computeNewPercentLeft(float draggedToX) {
+        float percentLeft =  100 - (100*(mTotalWidth - draggedToX)/mTotalWidth);
+        Log.d("TAG", "total width = " + mTotalWidth );
+        Log.d("TAG", "new percent left = " + percentLeft );
+        return percentLeft;
+    }
+
     private class DividerTouchListener implements View.OnTouchListener {
 
-        private float initialX;
-        private float currentX;
-        private float differenceX;
+        // note:
+        // since I want to return the global coordinate of the touch event, I need to use getRawX(.), not getX(.)
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    initialX = event.getX();
-                    differenceX = initialX;
                     break;
 
                 case MotionEvent.ACTION_MOVE:
-                    currentX = event.getX();
-                    differenceX = currentX - initialX;
-                    Log.d("DividerTouchListener", "move. difference = " + differenceX);
+                    Log.d("DividerTouchListener", "move. dragged to X  = " + event.getRawX());
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    differenceX = currentX - initialX;
-                    rebuildLayout(differenceX);
-                    // right now only rebuild fragments when user lifts finger
-                    Log.d("DividerTouchListener", "up");
+                    rebuildLayout(event.getRawX()); // right now only rebuild fragments when user lifts finger
                     break;
 
                 case MotionEvent.ACTION_CANCEL:
-                    differenceX = currentX - initialX;
-                    Log.d("DividerTouchListener", "cancel");
                     break;
             }
 

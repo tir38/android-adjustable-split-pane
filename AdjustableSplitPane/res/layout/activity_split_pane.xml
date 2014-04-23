@@ -5,7 +5,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <!-- each frame layout will have weight set programmatically
+    <!-- each frame layout will have weight set programatically,
         however we want to ensure that they have some size on first pass, so set width to 10dp -->
 
     <FrameLayout
