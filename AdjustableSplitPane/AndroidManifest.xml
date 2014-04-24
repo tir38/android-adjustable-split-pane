@@ -21,8 +21,7 @@
 
         <activity
                 android:name=".MySplitPaneActivity"
-                android:label="@string/app_name"
-                android:theme="@style/noAnimationTheme">
+                android:label="@string/app_name">
         </activity>
 
         <activity

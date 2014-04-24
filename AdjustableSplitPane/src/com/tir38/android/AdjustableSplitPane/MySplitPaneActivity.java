@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,16 +23,23 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     private static final String EXTRA_PERCENT_LEFT = "MySplitPaneActivity.EXTRA_PERCENT_LEFT";
     private static final String EXTRA_MINIMUM_WIDTH = "MySplitPaneActivity.EXTRA_MINIMUM_WIDTH";
     private float mTotalWidth;
+    private float mPercentLeft;
+    private FrameLayout mRightPane;
+    private FrameLayout mLeftPane;
+    private int mMinimumWidth;
 
     /**
      * public factory
      *
      * @param context
+     * @param percentLeft
+     * @param minimumWidth
      * @return
      */
-    public static Intent newIntent(Context context, float percentLeft) {
+    public static Intent newIntent(Context context, float percentLeft, int minimumWidth) {
         Intent intent = new Intent(context, MySplitPaneActivity.class);
         intent.putExtra(EXTRA_PERCENT_LEFT, percentLeft);
+        intent.putExtra(EXTRA_MINIMUM_WIDTH, minimumWidth);
         return intent;
     }
 
@@ -43,6 +51,7 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("TAG", "inside onCreate");
         setContentView(R.layout.activity_split_pane);
 
         // create list fragment and add to fm in the "left pane"
@@ -59,8 +68,8 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         }
 
         // pull extras from intent
-        float percentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
-        int minimumWidth = getIntent().getIntExtra(EXTRA_MINIMUM_WIDTH, 100);
+        mPercentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
+        mMinimumWidth = getIntent().getIntExtra(EXTRA_MINIMUM_WIDTH, 100);
 
         // get screen size
         Display display = getWindowManager().getDefaultDisplay();
@@ -72,28 +81,39 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
         divider.setOnTouchListener(new DividerTouchListener());
 
-        // set weights of left and right pane
-        FrameLayout leftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
-        leftPane.setLayoutParams(new LinearLayout.LayoutParams(minimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
+        // get left and right pane
+        mLeftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
+        mRightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
 
-        FrameLayout rightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
-        rightPane.setLayoutParams(new LinearLayout.LayoutParams(minimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
+        setWeights(mPercentLeft);
 
         // display detail
         int currentIndex = getIntent().getIntExtra(EXTRA_CURRENT_INDEX, 0);
         setupDetailPane(currentIndex);
     }
 
+    private void setWeights(float percentLeft) {
+        Log.d("TAG", "minimum width = " + mMinimumWidth);
+        mLeftPane.setLayoutParams(new LinearLayout.LayoutParams(mMinimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
+        mRightPane.setLayoutParams(new LinearLayout.LayoutParams(mMinimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
+    }
+
     /**
-     * rebuilds activity
+     * rebuilds entire view by forcing layout pass on root view
      *
      * @param draggedToX
      */
-    private void rebuildActivity(float draggedToX) {
-        float newPercentLeft = computeNewPercentLeft(draggedToX);
-        getIntent().putExtra(EXTRA_PERCENT_LEFT, newPercentLeft);
-        finish();
-        startActivity(getIntent());
+    private void rebuildView(float draggedToX) {
+        // reset weights
+        mPercentLeft = computeNewPercentLeft(draggedToX);
+        setWeights(mPercentLeft);
+
+        // save to extras
+        getIntent().putExtra(EXTRA_PERCENT_LEFT, mPercentLeft);
+
+        // force layout pass
+        ViewGroup viewGroup = (ViewGroup) findViewById(R.id.activity_split_pane);
+        viewGroup.requestLayout();
     }
 
     /**
@@ -133,14 +153,13 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     /**
      * implements MyListFragment's callbacks
      *
-     * @param emailIndex
+     * @param index
      */
     @Override
-    public void onEmailSelected(int emailIndex) {
-        setupDetailPane(emailIndex);
-
+    public void onItemSelected(int index) {
+        setupDetailPane(index);
         // update Extra
-        getIntent().putExtra(EXTRA_CURRENT_INDEX, emailIndex);
+        getIntent().putExtra(EXTRA_CURRENT_INDEX, index);
     }
 
 
@@ -162,7 +181,7 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    rebuildActivity(event.getRawX()); // right now only rebuild fragments when user lifts finger
+                    rebuildView(event.getRawX()); // right now only rebuild fragments when user lifts finger
                     break;
 
                 case MotionEvent.ACTION_CANCEL:

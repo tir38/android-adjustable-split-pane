@@ -22,13 +22,13 @@ public class MyListActivity extends SingleFragmentActivity implements MyListFrag
 
     /**
      * implements MyListFragment's callbacks
-     * @param emailIndex
+     * @param index
      */
     @Override
-    public void onEmailSelected(int emailIndex) {
+    public void onItemSelected(int index) {
 
         // get email from index
-        Email email = DataStore.get().getEmail(emailIndex);
+        Email email = DataStore.get().getEmail(index);
 
         // create Intent
         Intent intent = MyDetailActivity.newIntent(this, email);

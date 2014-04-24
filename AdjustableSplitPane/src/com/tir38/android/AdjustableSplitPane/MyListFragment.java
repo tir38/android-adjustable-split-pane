@@ -31,7 +31,7 @@ public class MyListFragment extends ListFragment {
      * Hosting Activity(s) must implement Callbacks
      */
     public interface Callbacks {
-        void onEmailSelected(int emailIndex);
+        void onItemSelected(int index);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MyListFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        mCallbacks.onEmailSelected(position);
+        mCallbacks.onItemSelected(position);
     }
 
     /**
