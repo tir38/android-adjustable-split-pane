@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,10 +20,12 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
 
     private static final String EXTRA_CURRENT_INDEX = "MySplitPaneActivity.EXTRA_CURRENT_INDEX";
     private static final String EXTRA_PERCENT_LEFT = "MySplitPaneActivity.EXTRA_PERCENT_LEFT";
+    private static final String EXTRA_MINIMUM_WIDTH = "MySplitPaneActivity.EXTRA_MINIMUM_WIDTH";
     private float mTotalWidth;
 
     /**
      * public factory
+     *
      * @param context
      * @return
      */
@@ -34,6 +35,11 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         return intent;
     }
 
+    /**
+     * Activity's onCreate lifecycle method
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,15 +58,9 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
             }
         }
 
-        // get percent from save instance state
+        // pull extras from intent
         float percentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
-
-        // set weights of left and right pane
-        FrameLayout leftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
-        leftPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
-
-        FrameLayout rightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
-        rightPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
+        int minimumWidth = getIntent().getIntExtra(EXTRA_MINIMUM_WIDTH, 100);
 
         // get screen size
         Display display = getWindowManager().getDefaultDisplay();
@@ -72,35 +72,33 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
         divider.setOnTouchListener(new DividerTouchListener());
 
+        // set weights of left and right pane
+        FrameLayout leftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
+        leftPane.setLayoutParams(new LinearLayout.LayoutParams(minimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
+
+        FrameLayout rightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
+        rightPane.setLayoutParams(new LinearLayout.LayoutParams(minimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
+
         // display detail
         int currentIndex = getIntent().getIntExtra(EXTRA_CURRENT_INDEX, 0);
         setupDetailPane(currentIndex);
-
     }
 
-    private void rebuildLayout(float draggedToX){
+    /**
+     * rebuilds activity
+     *
+     * @param draggedToX
+     */
+    private void rebuildActivity(float draggedToX) {
         float newPercentLeft = computeNewPercentLeft(draggedToX);
-
         getIntent().putExtra(EXTRA_PERCENT_LEFT, newPercentLeft);
         finish();
         startActivity(getIntent());
     }
 
     /**
-     * implements MyListFragment's callbacks
-     * @param emailIndex
-     */
-    @Override
-    public void onEmailSelected(int emailIndex) {
-
-        setupDetailPane(emailIndex);
-
-        // update Extra
-        getIntent().putExtra(EXTRA_CURRENT_INDEX, emailIndex);
-    }
-
-    /**
      * handles adding/removing detail fragment to fragment manager
+     *
      * @param index
      */
     private void setupDetailPane(int index) {
@@ -126,19 +124,32 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     }
 
     /**
-     * Computes the new percent left based on a draggedToX from the touch listener
+     * Computes the new percent left based on draggedToX from the touch listener
      */
     private float computeNewPercentLeft(float draggedToX) {
-        float percentLeft =  100 - (100*(mTotalWidth - draggedToX)/mTotalWidth);
-        Log.d("TAG", "total width = " + mTotalWidth );
-        Log.d("TAG", "new percent left = " + percentLeft );
-        return percentLeft;
+        return (100 - (100 * (mTotalWidth - draggedToX) / mTotalWidth));
     }
 
-    private class DividerTouchListener implements View.OnTouchListener {
+    /**
+     * implements MyListFragment's callbacks
+     *
+     * @param emailIndex
+     */
+    @Override
+    public void onEmailSelected(int emailIndex) {
+        setupDetailPane(emailIndex);
 
-        // note:
-        // since I want to return the global coordinate of the touch event, I need to use getRawX(.), not getX(.)
+        // update Extra
+        getIntent().putExtra(EXTRA_CURRENT_INDEX, emailIndex);
+    }
+
+
+    /**
+     * custom TouchListener
+     * note:
+     * since I want to return the global coordinate of the touch event, I need to use getRawX(.), not getX(.)
+     */
+    private class DividerTouchListener implements View.OnTouchListener {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -148,17 +159,15 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
                     break;
 
                 case MotionEvent.ACTION_MOVE:
-                    Log.d("DividerTouchListener", "move. dragged to X  = " + event.getRawX());
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    rebuildLayout(event.getRawX()); // right now only rebuild fragments when user lifts finger
+                    rebuildActivity(event.getRawX()); // right now only rebuild fragments when user lifts finger
                     break;
 
                 case MotionEvent.ACTION_CANCEL:
                     break;
             }
-
             return true;
         }
     }

@@ -3,9 +3,7 @@ package com.tir38.android.AdjustableSplitPane;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ListFragment;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -21,10 +19,10 @@ public class MyListFragment extends ListFragment {
 
     /**
      * public factory
+     *
      * @return
      */
     public static Fragment newInstance() {
-        Log.d("MyListFragment", "inside newInstance");
         Fragment fragment = new MyListFragment();
         return fragment;
     }
@@ -39,8 +37,6 @@ public class MyListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("MyListFragment", "inside onCreate");
-
         mEmails = DataStore.get().getEmails();
 
         // create array adapter
