@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 
 public class MySplitPaneActivity extends Activity implements MyListFragment.Callbacks {
 
+    private static final String EXTRA_CURRENT_LIST_INDEX = "MySplitPaneActivity.EXTRA_CURRENT_LIST_INDEX";
     private static final String EXTRA_PERCENT_LEFT = "MySplitPaneActivity.EXTRA_PERCENT_LEFT";
     private float mPercentLeft;
     private float mTotalWidth;
@@ -53,9 +54,9 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         }
 
         // get percent from save instance state
+        mPercentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
 
         // set weights of left and right pane
-        mPercentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
         FrameLayout leftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
         leftPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, mPercentLeft));
 
@@ -71,6 +72,9 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         // set touch listener on divider
         ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
         divider.setOnTouchListener(new DividerTouchListener());
+
+        // display detail
+        // TODO
     }
 
     private void rebuildLayout(float draggedToX){
@@ -83,17 +87,19 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
 
     /**
      * implements MyListFragment's callbacks
-     * @param email
+     * @param emailIndex
      */
     @Override
-    public void onEmailSelected(Email email) {
+    public void onEmailSelected(int emailIndex) {
         // get fragment manager and create new fragment transaction
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // get old (current) fragment
-        // create new fragment
         Fragment oldDetailFragment = fragmentManager.findFragmentById(R.id.activity_split_pane_right_pane);
+
+        // create new fragment
+        Email email = DataStore.get().getEmail(emailIndex);
         Fragment newDetailFragment = MyDetailFragment.newInstance(email);
 
         // if old fragment exists, remove

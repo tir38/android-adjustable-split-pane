@@ -34,7 +34,10 @@ public class DataStore {
     "Towering@mail.com",
     "Alert@mail.com"};
 
-
+    /**
+     * public singleton factory
+     * @return
+     */
     public static DataStore get() {
         if (sDataStore == null) {
             sDataStore = new DataStore();
@@ -42,12 +45,12 @@ public class DataStore {
         return sDataStore;
     }
 
-    public DataStore() {
+    private DataStore() {
         mEmails = new ArrayList<Email>();
         buildEmailList(50);
     }
 
-    public void buildEmailList(int numberOfEmails) {
+    private void buildEmailList(int numberOfEmails) {
         for (int i = 0; i < numberOfEmails; i++) {
 
             // get random to and from email addresses
@@ -63,7 +66,7 @@ public class DataStore {
         return mEmails;
     }
 
-    public void setEmails(List<Email> emails) {
-        mEmails = emails;
+    public Email getEmail(int index) {
+        return mEmails.get(index);
     }
 }
