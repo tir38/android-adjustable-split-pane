@@ -14,7 +14,7 @@ public class HomeActivity extends Activity {
         setContentView(R.layout.activity_home);
 
         final float initialPercentLeft = 50;
-        final int minimumWidth = 250; // dp
+        final int minimumWidth = 300; // dp
 
         Button regularButton = (Button) findViewById(R.id.activity_home_regular_button);
         regularButton.setOnClickListener(new View.OnClickListener() {

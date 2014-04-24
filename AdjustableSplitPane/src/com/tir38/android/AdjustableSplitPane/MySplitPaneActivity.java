@@ -21,12 +21,12 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
 
     private static final String EXTRA_CURRENT_INDEX = "MySplitPaneActivity.EXTRA_CURRENT_INDEX";
     private static final String EXTRA_PERCENT_LEFT = "MySplitPaneActivity.EXTRA_PERCENT_LEFT";
-    private static final String EXTRA_MINIMUM_WIDTH = "MySplitPaneActivity.EXTRA_MINIMUM_WIDTH";
-    private float mTotalWidth;
-    private float mPercentLeft;
+    private static final String EXTRA_MINIMUM_WIDTH_DIP = "MySplitPaneActivity.EXTRA_MINIMUM_WIDTH_DIP";
+    private float mTotalWidth; // pixels
+    private float mPercentLeft; // percent of screen
     private FrameLayout mRightPane;
     private FrameLayout mLeftPane;
-    private int mMinimumWidth;
+    private float mMinimumWidth; // percent of screen
 
     /**
      * public factory
@@ -39,7 +39,7 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     public static Intent newIntent(Context context, float percentLeft, int minimumWidth) {
         Intent intent = new Intent(context, MySplitPaneActivity.class);
         intent.putExtra(EXTRA_PERCENT_LEFT, percentLeft);
-        intent.putExtra(EXTRA_MINIMUM_WIDTH, minimumWidth);
+        intent.putExtra(EXTRA_MINIMUM_WIDTH_DIP, minimumWidth);
         return intent;
     }
 
@@ -69,7 +69,7 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
 
         // pull extras from intent
         mPercentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
-        mMinimumWidth = getIntent().getIntExtra(EXTRA_MINIMUM_WIDTH, 100);
+        int minimumWidthDip = getIntent().getIntExtra(EXTRA_MINIMUM_WIDTH_DIP, 100);
 
         // get screen size
         Display display = getWindowManager().getDefaultDisplay();
@@ -77,25 +77,48 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         display.getSize(size);
         mTotalWidth = size.x;
 
+        // convert minimum width from dip to percent
+        mMinimumWidth = convertDipToPercent(minimumWidthDip);
+
         // set touch listener on divider
         ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
         divider.setOnTouchListener(new DividerTouchListener());
 
-        // get left and right pane
+        // get left and right pane and set weights
         mLeftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
         mRightPane = (FrameLayout) findViewById(R.id.activity_split_pane_right_pane);
-
         setWeights(mPercentLeft);
 
-        // display detail
+        // display right pane
         int currentIndex = getIntent().getIntExtra(EXTRA_CURRENT_INDEX, 0);
         setupDetailPane(currentIndex);
     }
 
+    /**
+     * sets the layout weights of the left and right panes
+     *
+     * @param percentLeft
+     */
     private void setWeights(float percentLeft) {
         Log.d("TAG", "minimum width = " + mMinimumWidth);
-        mLeftPane.setLayoutParams(new LinearLayout.LayoutParams(mMinimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
-        mRightPane.setLayoutParams(new LinearLayout.LayoutParams(mMinimumWidth, ViewGroup.LayoutParams.MATCH_PARENT, 100 - percentLeft));
+
+        float percentRight = 100 - percentLeft;
+
+        // if left side too small, resize
+        if (percentLeft < mMinimumWidth) {
+            percentLeft = mMinimumWidth;
+            percentRight = 100 - percentLeft;
+        }
+
+        // if right side too small, resize
+        if (percentRight < mMinimumWidth) {
+            percentRight = mMinimumWidth;
+            percentLeft = 100 - percentRight;
+        }
+
+        // set weights
+        mLeftPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, percentLeft));
+        mRightPane.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, percentRight));
     }
 
     /**
@@ -151,6 +174,15 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     }
 
     /**
+     * converts dip dimension to percentage of the screen
+     * @param dip
+     * @return
+     */
+    private float convertDipToPercent(int dip) {
+        return (dip / mTotalWidth) * 100;
+    }
+
+    /**
      * implements MyListFragment's callbacks
      *
      * @param index
@@ -161,7 +193,6 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         // update Extra
         getIntent().putExtra(EXTRA_CURRENT_INDEX, index);
     }
-
 
     /**
      * custom TouchListener
