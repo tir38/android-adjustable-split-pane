@@ -209,10 +209,11 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
                     break;
 
                 case MotionEvent.ACTION_MOVE:
+                    rebuildView(event.getRawX());
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    rebuildView(event.getRawX()); // right now only rebuild fragments when user lifts finger
+                    rebuildView(event.getRawX());
                     break;
 
                 case MotionEvent.ACTION_CANCEL:
