@@ -6,4 +6,4 @@ _This is still under regular development and is not meant for prime-time. Play a
 A custom Activity and Layout for drag-adjustable width split pane. Users can drag the divider to resize your two panes. Each pane hosts a fragment you provide.
 
 ##Demo
-![demo gif](/doc/demo.gif “Demo”)
+![demo gif](doc/demo.gif)
