@@ -7,12 +7,10 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,11 +20,15 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
     private static final String EXTRA_CURRENT_INDEX = "MySplitPaneActivity.EXTRA_CURRENT_INDEX";
     private static final String EXTRA_PERCENT_LEFT = "MySplitPaneActivity.EXTRA_PERCENT_LEFT";
     private static final String EXTRA_MINIMUM_WIDTH_DIP = "MySplitPaneActivity.EXTRA_MINIMUM_WIDTH_DIP";
+    private static final int PADDING_OF_DIVIDER_TOUCH_AREA_DIP = 100;
     private float mTotalWidth; // pixels
+
     private float mPercentLeft; // percent of screen
     private FrameLayout mRightPane;
     private FrameLayout mLeftPane;
     private float mMinimumWidth; // percent of screen
+    private ImageView mDivider;
+    private LinearLayout mRootLayout;
 
     /**
      * public factory
@@ -54,6 +56,8 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         Log.d("TAG", "inside onCreate");
         setContentView(R.layout.activity_split_pane);
 
+        mRootLayout = (LinearLayout) findViewById(R.id.activity_split_pane_root_linear_layout);
+
         // create list fragment and add to fm in the "left pane"
         FragmentManager fragmentManager = getFragmentManager();
         Fragment fragment = fragmentManager.findFragmentById(R.id.activity_split_pane_left_pane);
@@ -71,7 +75,7 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         mPercentLeft = getIntent().getFloatExtra(EXTRA_PERCENT_LEFT, 50);
         int minimumWidthDip = getIntent().getIntExtra(EXTRA_MINIMUM_WIDTH_DIP, 100);
 
-        // get screen size
+        // get available screen width
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -81,8 +85,9 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         mMinimumWidth = convertDipToPercent(minimumWidthDip);
 
         // set touch listener on divider
-        ImageView divider = (ImageView) findViewById(R.id.activity_split_pane_divider);
-        divider.setOnTouchListener(new DividerTouchListener());
+        mDivider = (ImageView) findViewById(R.id.activity_split_pane_divider);
+        mDivider.setOnTouchListener(new DividerTouchListener());
+        setupTouchDelegate();
 
         // get left and right pane and set weights
         mLeftPane = (FrameLayout) findViewById(R.id.activity_split_pane_left_pane);
@@ -92,6 +97,14 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         // display right pane
         int currentIndex = getIntent().getIntExtra(EXTRA_CURRENT_INDEX, 0);
         setupDetailPane(currentIndex);
+
+        mRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                //at this point the layout pass is complete and we can re-set the touch delegate area
+                setupTouchDelegate();
+            }
+        });
     }
 
     /**
@@ -135,7 +148,7 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         getIntent().putExtra(EXTRA_PERCENT_LEFT, mPercentLeft);
 
         // force layout pass
-        ViewGroup viewGroup = (ViewGroup) findViewById(R.id.activity_split_pane);
+        ViewGroup viewGroup = (ViewGroup) findViewById(R.id.activity_split_pane_root_linear_layout);
         viewGroup.requestLayout();
     }
 
@@ -173,13 +186,39 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
         return (100 - (100 * (mTotalWidth - draggedToX) / mTotalWidth));
     }
 
+    private void setupTouchDelegate() {
+        // get bounds of divider
+        Rect touchArea = new Rect();
+        mDivider.getHitRect(touchArea);
+
+        // increases left and right
+        touchArea.left -= PADDING_OF_DIVIDER_TOUCH_AREA_DIP;
+        touchArea.right += PADDING_OF_DIVIDER_TOUCH_AREA_DIP;
+
+        // get root view and set TouchDelegate
+        if (mRootLayout != null) {
+            mRootLayout.setTouchDelegate(new TouchDelegate(touchArea, mDivider));
+        }
+    }
+
     /**
-     * converts dip dimension to percentage of the screen
+     * helper to convert dip dimension to percentage of the screen
+     *
      * @param dip
      * @return
      */
     private float convertDipToPercent(int dip) {
         return (dip / mTotalWidth) * 100;
+    }
+
+    /**
+     * helper to convert percent of the screen into dip dimension
+     *
+     * @param percent
+     * @return
+     */
+    private int convertPercentToDip(float percent) {
+        return (int) ((percent * mTotalWidth) / 100);
     }
 
     /**
@@ -206,19 +245,22 @@ public class MySplitPaneActivity extends Activity implements MyListFragment.Call
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    break;
+                    Log.d("TAG", "divider is grabbing this gesture");
+                    return true;
 
                 case MotionEvent.ACTION_MOVE:
-                    break;
+                    return true;
 
                 case MotionEvent.ACTION_UP:
                     rebuildView(event.getRawX()); // right now only rebuild fragments when user lifts finger
-                    break;
+                    return true;
 
                 case MotionEvent.ACTION_CANCEL:
-                    break;
+                    return true;
+
+                default:
+                    return true;
             }
-            return true;
         }
     }
 }

@@ -17,6 +17,10 @@
 
     <TextView android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-            android:text="TO TRY:\n- intercept touch events on left and right panes \n\t\t\tto give divider bar larger 'handle'\n- update in real time"/>
+            android:text="TO TRY:\n
+            - intercept touch events on left and right panes to give divider bar larger 'handle'\n
+            - update in real time\n
+            - look into this: https://developer.android.com/reference/android/view/TouchDelegate.html
+            "/>
 
 </LinearLayout>
