@@ -7,7 +7,7 @@ A custom Activity and Layout for drag-adjustable width split pane. Users can dra
 
 The important parts are:
 - `activity_split_pane.xml`
-- 'MySplitPaneActivity.java`
+- `MySplitPaneActivity.java`
 
 ##Demo
 ![demo gif](doc/demo.gif)
